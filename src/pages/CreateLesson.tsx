@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +9,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { LessonEditor } from '@/components/lesson/LessonEditor';
-import { LessonContent } from '@/types/lesson';
+import { LessonContent, Module } from '@/types/lesson';
 import { generateLesson } from '@/lib/ai-service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const CreateLesson = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialModuleId = searchParams.get('moduleId');
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('input');
   const [lessonInput, setLessonInput] = useState({
@@ -25,15 +29,45 @@ const CreateLesson = () => {
     description: '',
     targetAudience: '',
     difficultyLevel: '',
-    additionalInstructions: ''
+    additionalInstructions: '',
+    moduleId: initialModuleId || ''
   });
   const [generatedLesson, setGeneratedLesson] = useState<LessonContent | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
+
+  useEffect(() => {
+    // In a real app, fetch modules from API or state management
+    // For now we'll use mock data
+    setModules([
+      {
+        id: '1',
+        title: 'AI Basics',
+        description: 'Fundamental concepts of artificial intelligence and machine learning.',
+        lessons: ['lesson1', 'lesson2', 'lesson3'],
+        order: 1,
+      },
+      {
+        id: '2',
+        title: 'Advanced AI',
+        description: 'Deep learning, neural networks, and advanced AI topics.',
+        lessons: ['lesson4', 'lesson5'],
+        order: 2,
+      }
+    ]);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setLessonInput({
       ...lessonInput,
       [name]: value
+    });
+  };
+
+  const handleModuleChange = (value: string) => {
+    setLessonInput({
+      ...lessonInput,
+      moduleId: value
     });
   };
 
@@ -47,9 +81,21 @@ const CreateLesson = () => {
       return;
     }
 
+    // Check if OpenAI API key exists in localStorage if not using environment variable
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
+      const apiKey = localStorage.getItem('openai_api_key');
+      if (!apiKey) {
+        toast({
+          title: "API Key Required",
+          description: "Please add your OpenAI API key in the settings page.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     try {
       setIsGenerating(true);
-      // In a real app, we'd make an API call to an AI service
       const lesson = await generateLesson(lessonInput);
       setGeneratedLesson(lesson);
       setActiveTab('preview');
@@ -64,6 +110,7 @@ const CreateLesson = () => {
         description: "There was an error generating your lesson. Please try again.",
         variant: "destructive"
       });
+      console.error("Error generating lesson:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -71,12 +118,18 @@ const CreateLesson = () => {
 
   const handleSaveLesson = () => {
     if (generatedLesson) {
-      // In a real app, save to database or localStorage
+      // In a real app, save to database or localStorage with the module association
       toast({
         title: "Lesson saved",
-        description: "Your lesson has been saved successfully!",
+        description: `Your lesson has been saved successfully${lessonInput.moduleId ? ' to the selected module' : ''}!`,
       });
-      navigate('/lessons');
+      
+      // Redirect based on whether a module was selected
+      if (lessonInput.moduleId) {
+        navigate(`/modules/${lessonInput.moduleId}/lessons`);
+      } else {
+        navigate('/lessons');
+      }
     }
   };
 
@@ -138,7 +191,7 @@ const CreateLesson = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="targetAudience">Target Audience</Label>
                     <Input 
@@ -159,6 +212,25 @@ const CreateLesson = () => {
                       value={lessonInput.difficultyLevel}
                       onChange={handleInputChange}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="moduleSelect">Module (Optional)</Label>
+                    <Select 
+                      value={lessonInput.moduleId} 
+                      onValueChange={handleModuleChange}
+                    >
+                      <SelectTrigger id="moduleSelect">
+                        <SelectValue placeholder="Select a module" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {modules.map((module) => (
+                          <SelectItem key={module.id} value={module.id}>
+                            {module.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

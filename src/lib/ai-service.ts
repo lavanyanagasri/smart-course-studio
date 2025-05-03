@@ -1,11 +1,93 @@
 
 import { LessonContent, LessonInput } from "@/types/lesson";
 
-// This is a mock AI service - in a real app, this would make API calls to an AI service
+// This function will call the OpenAI API to generate lesson content
 export async function generateLesson(input: LessonInput): Promise<LessonContent> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert educational content creator. Generate a structured lesson based on the provided information. Return ONLY valid JSON conforming to the LessonContent interface."
+          },
+          {
+            role: "user",
+            content: `Create a lesson with the following details:
+              Title: ${input.title || "Introduction to the Topic"}
+              Topic: ${input.topic}
+              Description: ${input.description || ""}
+              Target Audience: ${input.targetAudience || "students"}
+              Difficulty Level: ${input.difficultyLevel || "beginner"}
+              Additional Instructions: ${input.additionalInstructions || ""}
+              
+              The response should be a valid JSON object with the following structure:
+              {
+                "title": string,
+                "description": string,
+                "learningOutcomes": string[],
+                "keyConcepts": Array<{term: string, definition: string}>,
+                "content": {
+                  "introduction": string,
+                  "sections": Array<{title: string, content: string}>,
+                  "conclusion": string
+                },
+                "activities": Array<{title: string, description: string, type: "discussion" | "exercise" | "quiz" | "project"}>,
+                "assessment": {
+                  "questions": Array<{question: string, options?: string[], answer?: string}>
+                },
+                "resources": Array<{title: string, url?: string, description: string}>
+              }
+              `
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 4000
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI API Error:", errorData);
+      throw new Error(`OpenAI API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Extract the JSON content from the response
+    const content = data.choices[0].message.content;
+    let parsedContent: LessonContent;
+    
+    try {
+      // Try to parse the content as JSON directly
+      parsedContent = JSON.parse(content);
+    } catch (e) {
+      // In case the model returns markdown or other format, extract JSON
+      const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/```\n([\s\S]*?)\n```/);
+      if (jsonMatch && jsonMatch[1]) {
+        parsedContent = JSON.parse(jsonMatch[1]);
+      } else {
+        throw new Error("Failed to parse OpenAI response as JSON");
+      }
+    }
+
+    return parsedContent;
+  } catch (error) {
+    console.error("Error generating lesson:", error);
+    
+    // Fallback to mock data if API call fails
+    return fallbackGenerateLesson(input);
+  }
+}
+
+// Fallback function that returns mock data when the API call fails
+function fallbackGenerateLesson(input: LessonInput): LessonContent {
   // Return mock data based on input
   return {
     title: input.title || "Introduction to the Topic",
