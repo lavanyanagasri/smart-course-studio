@@ -20,8 +20,9 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lessonContent, onUpd
   const handleInputChange = (
     section: keyof LessonContent, 
     value: string | string[] | any[],
-    index?: number,
-    field?: string
+    index?: number | string,
+    field?: string,
+    nestedField?: string
   ) => {
     const updatedLesson = { ...lessonContent };
     
@@ -32,10 +33,17 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lessonContent, onUpd
       } else if (section === 'learningOutcomes') {
         updatedLesson.learningOutcomes[index] = value as string;
       } else if (section === 'content' && field === 'sections') {
-        const sectionField = arguments[4] as string; // Additional argument for nested field
-        updatedLesson.content.sections[index][sectionField as 'title' | 'content'] = value as string;
+        if (nestedField && (nestedField === 'title' || nestedField === 'content')) {
+          updatedLesson.content.sections[index][nestedField] = value as string;
+        }
       } else if (section === 'activities') {
-        updatedLesson.activities[index][field as 'title' | 'description' | 'type'] = value as string;
+        if (field === 'type' && typeof value === 'string') {
+          // Ensure value is a valid activity type
+          const activityType = value as 'discussion' | 'exercise' | 'quiz' | 'project';
+          updatedLesson.activities[index].type = activityType;
+        } else if (field === 'title' || field === 'description') {
+          updatedLesson.activities[index][field] = value as string;
+        }
       }
     } else if (section === 'title' || section === 'description') {
       // Update top-level string fields
