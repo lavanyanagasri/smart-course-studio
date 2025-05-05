@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -36,24 +35,16 @@ const CreateLesson = () => {
   const [modules, setModules] = useState<Module[]>([]);
 
   useEffect(() => {
-    // In a real app, fetch modules from API or state management
-    // For now we'll use mock data
-    setModules([
-      {
-        id: '1',
-        title: 'AI Basics',
-        description: 'Fundamental concepts of artificial intelligence and machine learning.',
-        lessons: ['lesson1', 'lesson2', 'lesson3'],
-        order: 1,
-      },
-      {
-        id: '2',
-        title: 'Advanced AI',
-        description: 'Deep learning, neural networks, and advanced AI topics.',
-        lessons: ['lesson4', 'lesson5'],
-        order: 2,
+    // Load modules from localStorage
+    try {
+      const savedModulesString = localStorage.getItem('modules');
+      if (savedModulesString) {
+        const savedModules = JSON.parse(savedModulesString);
+        setModules(savedModules);
       }
-    ]);
+    } catch (error) {
+      console.error('Error loading modules:', error);
+    }
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -117,8 +108,59 @@ const CreateLesson = () => {
   };
 
   const handleSaveLesson = () => {
-    if (generatedLesson) {
-      // In a real app, save to database or localStorage with the module association
+    if (!generatedLesson) {
+      toast({
+        title: "No lesson to save",
+        description: "Please generate a lesson first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Get selected module name if applicable
+      let selectedModuleName = null;
+      if (lessonInput.moduleId) {
+        const selectedModule = modules.find(module => module.id === lessonInput.moduleId);
+        selectedModuleName = selectedModule ? selectedModule.title : null;
+      }
+      
+      // Create lesson object to save
+      const lessonToSave = {
+        id: crypto.randomUUID(),
+        title: generatedLesson.title,
+        topic: lessonInput.topic,
+        date: new Date().toISOString(),
+        moduleId: lessonInput.moduleId || null,
+        moduleName: selectedModuleName,
+        content: generatedLesson
+      };
+      
+      // Get existing lessons or initialize empty array
+      const existingLessonsString = localStorage.getItem('lessons');
+      const existingLessons = existingLessonsString ? JSON.parse(existingLessonsString) : [];
+      
+      // Add new lesson to array
+      const updatedLessons = [...existingLessons, lessonToSave];
+      
+      // Save back to localStorage
+      localStorage.setItem('lessons', JSON.stringify(updatedLessons));
+      
+      // Update module if lesson is assigned to a module
+      if (lessonInput.moduleId) {
+        const updatedModules = modules.map(module => {
+          if (module.id === lessonInput.moduleId) {
+            return {
+              ...module,
+              lessons: [...module.lessons, lessonToSave.id]
+            };
+          }
+          return module;
+        });
+        
+        localStorage.setItem('modules', JSON.stringify(updatedModules));
+      }
+      
       toast({
         title: "Lesson saved",
         description: `Your lesson has been saved successfully${lessonInput.moduleId ? ' to the selected module' : ''}!`,
@@ -130,6 +172,13 @@ const CreateLesson = () => {
       } else {
         navigate('/lessons');
       }
+    } catch (error) {
+      console.error('Error saving lesson:', error);
+      toast({
+        title: "Save failed",
+        description: "There was an error saving your lesson. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -295,6 +344,22 @@ const CreateLesson = () => {
       </div>
     </MainLayout>
   );
+};
+
+// Don't forget to add the missing handleInputChange function
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  setLessonInput({
+    ...lessonInput,
+    [name]: value
+  });
+};
+
+const handleModuleChange = (value: string) => {
+  setLessonInput({
+    ...lessonInput,
+    moduleId: value
+  });
 };
 
 export default CreateLesson;
