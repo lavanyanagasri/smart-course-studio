@@ -1,0 +1,197 @@
+
+import { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { generateLesson } from '@/lib/ai-service';
+import { LessonContent, Module } from '@/types/lesson';
+
+interface LessonInput {
+  title: string;
+  topic: string;
+  description: string;
+  targetAudience: string;
+  difficultyLevel: string;
+  additionalInstructions: string;
+  moduleId: string | null;
+}
+
+export function useCreateLesson(initialModuleId: string | null) {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState('input');
+  const [lessonInput, setLessonInput] = useState<LessonInput>({
+    title: '',
+    topic: '',
+    description: '',
+    targetAudience: '',
+    difficultyLevel: '',
+    additionalInstructions: '',
+    moduleId: initialModuleId || ''
+  });
+  const [generatedLesson, setGeneratedLesson] = useState<LessonContent | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setLessonInput({
+      ...lessonInput,
+      [name]: value
+    });
+  };
+
+  const handleModuleChange = (value: string) => {
+    setLessonInput({
+      ...lessonInput,
+      moduleId: value
+    });
+  };
+
+  const handleGenerateLesson = async () => {
+    if (!lessonInput.topic || !lessonInput.title) {
+      toast({
+        title: "Missing information",
+        description: "Please provide at least a title and topic for your lesson.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if OpenAI API key exists in localStorage if not using environment variable
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
+      const apiKey = localStorage.getItem('openai_api_key');
+      if (!apiKey) {
+        toast({
+          title: "API Key Required",
+          description: "Please add your OpenAI API key in the settings page.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    try {
+      setIsGenerating(true);
+      const lesson = await generateLesson(lessonInput);
+      setGeneratedLesson(lesson);
+      setActiveTab('preview');
+      
+      toast({
+        title: "Lesson generated",
+        description: "Your lesson has been created successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Generation failed",
+        description: "There was an error generating your lesson. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error generating lesson:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSaveLesson = () => {
+    if (!generatedLesson) {
+      toast({
+        title: "No lesson to save",
+        description: "Please generate a lesson first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Get selected module name if applicable
+      let selectedModuleName = null;
+      if (lessonInput.moduleId) {
+        const selectedModule = modules.find(module => module.id === lessonInput.moduleId);
+        selectedModuleName = selectedModule ? selectedModule.title : null;
+      }
+      
+      // Create lesson object to save
+      const lessonToSave = {
+        id: crypto.randomUUID(),
+        title: generatedLesson.title,
+        topic: lessonInput.topic,
+        date: new Date().toISOString(),
+        moduleId: lessonInput.moduleId || null,
+        moduleName: selectedModuleName,
+        content: generatedLesson
+      };
+      
+      // Get existing lessons or initialize empty array
+      const existingLessonsString = localStorage.getItem('lessons');
+      const existingLessons = existingLessonsString ? JSON.parse(existingLessonsString) : [];
+      
+      // Add new lesson to array
+      const updatedLessons = [...existingLessons, lessonToSave];
+      
+      // Save back to localStorage
+      localStorage.setItem('lessons', JSON.stringify(updatedLessons));
+      
+      // Update module if lesson is assigned to a module
+      if (lessonInput.moduleId) {
+        const updatedModules = modules.map(module => {
+          if (module.id === lessonInput.moduleId) {
+            return {
+              ...module,
+              lessons: [...module.lessons, lessonToSave.id]
+            };
+          }
+          return module;
+        });
+        
+        localStorage.setItem('modules', JSON.stringify(updatedModules));
+      }
+      
+      toast({
+        title: "Lesson saved",
+        description: `Your lesson has been saved successfully${lessonInput.moduleId ? ' to the selected module' : ''}!`,
+      });
+      
+      // Redirect based on whether a module was selected
+      if (lessonInput.moduleId) {
+        navigate(`/modules/${lessonInput.moduleId}/lessons`);
+      } else {
+        navigate('/lessons');
+      }
+    } catch (error) {
+      console.error('Error saving lesson:', error);
+      toast({
+        title: "Save failed",
+        description: "There was an error saving your lesson. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadModules = () => {
+    try {
+      const savedModulesString = localStorage.getItem('modules');
+      if (savedModulesString) {
+        const savedModules = JSON.parse(savedModulesString);
+        setModules(savedModules);
+      }
+    } catch (error) {
+      console.error('Error loading modules:', error);
+    }
+  };
+
+  return {
+    isGenerating,
+    activeTab,
+    lessonInput,
+    generatedLesson,
+    modules,
+    setActiveTab,
+    handleInputChange,
+    handleModuleChange,
+    handleGenerateLesson,
+    handleSaveLesson,
+    loadModules,
+    setGeneratedLesson
+  };
+}

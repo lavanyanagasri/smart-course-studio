@@ -1,4 +1,3 @@
-
 import { LessonContent, LessonInput } from "@/types/lesson";
 
 // This function will call the OpenAI API to generate lesson content
@@ -8,7 +7,7 @@ export async function generateLesson(input: LessonInput): Promise<LessonContent>
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY || localStorage.getItem('openai_api_key')}`
       },
       body: JSON.stringify({
         model: "gpt-4o",

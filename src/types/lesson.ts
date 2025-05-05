@@ -6,6 +6,7 @@ export interface LessonInput {
   targetAudience: string;
   difficultyLevel: string;
   additionalInstructions: string;
+  moduleId?: string | null;
 }
 
 export interface LessonContent {

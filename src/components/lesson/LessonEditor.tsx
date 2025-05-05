@@ -39,7 +39,10 @@ export const LessonEditor: React.FC<LessonEditorProps> = ({ lessonContent, onUpd
       } else if (section === 'activities') {
         if (field === 'type' && typeof value === 'string') {
           // Ensure value is a valid activity type
-          const activityType = value as 'discussion' | 'exercise' | 'quiz' | 'project';
+          const activityTypes = ['discussion', 'exercise', 'quiz', 'project'] as const;
+          const activityType = activityTypes.includes(value as any) 
+            ? value as 'discussion' | 'exercise' | 'quiz' | 'project'
+            : 'exercise';
           updatedLesson.activities[index].type = activityType;
         } else if (field === 'title' || field === 'description') {
           updatedLesson.activities[index][field] = value as string;
