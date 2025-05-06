@@ -3,17 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { generateLesson } from '@/lib/ai-service';
-import { LessonContent, Module } from '@/types/lesson';
-
-interface LessonInput {
-  title: string;
-  topic: string;
-  description: string;
-  targetAudience: string;
-  difficultyLevel: string;
-  additionalInstructions: string;
-  moduleId: string | null;
-}
+import { LessonContent, Module, LessonInput } from '@/types/lesson';
 
 export function useCreateLesson(initialModuleId: string | null) {
   const { toast } = useToast();
@@ -28,7 +18,7 @@ export function useCreateLesson(initialModuleId: string | null) {
     targetAudience: '',
     difficultyLevel: '',
     additionalInstructions: '',
-    moduleId: initialModuleId || ''
+    moduleId: initialModuleId || null
   });
   const [generatedLesson, setGeneratedLesson] = useState<LessonContent | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
@@ -44,7 +34,7 @@ export function useCreateLesson(initialModuleId: string | null) {
   const handleModuleChange = (value: string) => {
     setLessonInput({
       ...lessonInput,
-      moduleId: value
+      moduleId: value === '' ? null : value
     });
   };
 
@@ -73,7 +63,11 @@ export function useCreateLesson(initialModuleId: string | null) {
 
     try {
       setIsGenerating(true);
-      const lesson = await generateLesson(lessonInput);
+      // Add a timestamp to ensure unique prompts for different topics
+      const lesson = await generateLesson({
+        ...lessonInput,
+        timestamp: new Date().toISOString() // Add timestamp to make each request unique
+      });
       setGeneratedLesson(lesson);
       setActiveTab('preview');
       
@@ -117,7 +111,7 @@ export function useCreateLesson(initialModuleId: string | null) {
         title: generatedLesson.title,
         topic: lessonInput.topic,
         date: new Date().toISOString(),
-        moduleId: lessonInput.moduleId || null,
+        moduleId: lessonInput.moduleId,
         moduleName: selectedModuleName,
         content: generatedLesson
       };
@@ -134,7 +128,10 @@ export function useCreateLesson(initialModuleId: string | null) {
       
       // Update module if lesson is assigned to a module
       if (lessonInput.moduleId) {
-        const updatedModules = modules.map(module => {
+        const existingModulesString = localStorage.getItem('modules');
+        const existingModules = existingModulesString ? JSON.parse(existingModulesString) : [];
+        
+        const updatedModules = existingModules.map((module: Module) => {
           if (module.id === lessonInput.moduleId) {
             return {
               ...module,

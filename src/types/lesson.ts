@@ -7,6 +7,7 @@ export interface LessonInput {
   difficultyLevel: string;
   additionalInstructions: string;
   moduleId?: string | null;
+  timestamp?: string; // Add timestamp field to make each request unique
 }
 
 export interface LessonContent {
