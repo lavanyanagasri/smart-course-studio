@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, Edit, File, Plus, Trash2 } from 'lucide-react';
@@ -11,54 +11,90 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const ModuleLessons = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
-  // In a real app, these would be fetched from an API based on the moduleId
-  const [module] = useState({
-    id: moduleId,
-    title: moduleId === '1' ? 'AI Basics' : 'Advanced AI',
-    description: moduleId === '1' 
-      ? 'Fundamental concepts of artificial intelligence and machine learning.'
-      : 'Deep learning, neural networks, and advanced AI topics.',
-  });
+  const [module, setModule] = useState<any>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
   
-  const [lessons] = useState([
-    {
-      id: 'lesson1',
-      title: 'Introduction to AI',
-      description: 'Overview of artificial intelligence and its history',
-      moduleId: '1'
-    },
-    {
-      id: 'lesson2',
-      title: 'Machine Learning Fundamentals',
-      description: 'Basic concepts and approaches in machine learning',
-      moduleId: '1'
-    },
-    {
-      id: 'lesson3',
-      title: 'Neural Networks Overview',
-      description: 'Introduction to neural network architecture',
-      moduleId: '1'
-    },
-    {
-      id: 'lesson4',
-      title: 'Deep Learning Architectures',
-      description: 'Advanced neural network structures and applications',
-      moduleId: '2'
-    },
-    {
-      id: 'lesson5',
-      title: 'Reinforcement Learning',
-      description: 'Learning through interaction with an environment',
-      moduleId: '2'
-    },
-  ].filter(lesson => lesson.moduleId === moduleId));
+  useEffect(() => {
+    // Load module and lessons from localStorage
+    if (moduleId) {
+      loadModuleData(moduleId);
+    }
+  }, [moduleId]);
+  
+  const loadModuleData = (moduleId: string) => {
+    try {
+      // Load module data
+      const modulesString = localStorage.getItem('modules');
+      if (modulesString) {
+        const modules = JSON.parse(modulesString);
+        const foundModule = modules.find((m: any) => m.id === moduleId);
+        if (foundModule) {
+          setModule(foundModule);
+          
+          // Load lessons that belong to this module
+          const lessonsString = localStorage.getItem('lessons');
+          if (lessonsString) {
+            const allLessons = JSON.parse(lessonsString);
+            const moduleLessons = allLessons.filter((lesson: any) => 
+              lesson.moduleId === moduleId
+            );
+            setLessons(moduleLessons);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading module data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load module data",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleDeleteLesson = (lessonId: string) => {
-    toast({
-      title: "Lesson deleted",
-      description: "The lesson has been deleted successfully.",
-    });
+    try {
+      // Remove lesson from lessons array
+      const lessonsString = localStorage.getItem('lessons');
+      if (lessonsString) {
+        const allLessons = JSON.parse(lessonsString);
+        const updatedLessons = allLessons.filter((lesson: any) => lesson.id !== lessonId);
+        localStorage.setItem('lessons', JSON.stringify(updatedLessons));
+      }
+      
+      // Remove lesson reference from module
+      const modulesString = localStorage.getItem('modules');
+      if (modulesString && moduleId) {
+        const modules = JSON.parse(modulesString);
+        const updatedModules = modules.map((m: any) => {
+          if (m.id === moduleId) {
+            return {
+              ...m,
+              lessons: (m.lessons || []).filter((id: string) => id !== lessonId)
+            };
+          }
+          return m;
+        });
+        localStorage.setItem('modules', JSON.stringify(updatedModules));
+      }
+      
+      // Update state
+      setLessons(prev => prev.filter(lesson => lesson.id !== lessonId));
+      
+      toast({
+        title: "Lesson deleted",
+        description: "The lesson has been deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting lesson:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete lesson",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -70,18 +106,12 @@ const ModuleLessons = () => {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{module.title}</h1>
-              <p className="text-gray-600 mt-1">{module.description}</p>
+              <h1 className="text-3xl font-bold text-gray-900">{module?.title || "Module"}</h1>
+              <p className="text-gray-600 mt-1">{module?.description}</p>
             </div>
             <Button 
               className="bg-coursegpt-purple hover:bg-coursegpt-purple-dark"
-              onClick={() => {
-                // In a real app, this would redirect to the create lesson page with moduleId pre-filled
-                toast({
-                  title: "Create Lesson",
-                  description: "Navigating to lesson creation...",
-                });
-              }}
+              onClick={() => navigate(`/create-lesson?moduleId=${moduleId}`)}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Lesson
@@ -96,13 +126,7 @@ const ModuleLessons = () => {
             <p className="text-gray-600 mb-6">Create your first lesson for this module</p>
             <Button 
               className="bg-coursegpt-purple hover:bg-coursegpt-purple-dark"
-              onClick={() => {
-                // In a real app, this would redirect to the create lesson page
-                toast({
-                  title: "Create Lesson",
-                  description: "Navigating to lesson creation...",
-                });
-              }}
+              onClick={() => navigate(`/create-lesson?moduleId=${moduleId}`)}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Lesson
@@ -116,11 +140,16 @@ const ModuleLessons = () => {
                   <CardTitle>{lesson.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">{lesson.description}</p>
+                  <p className="text-gray-600">{lesson.topic}</p>
                 </CardContent>
                 <CardFooter className="flex justify-between border-t pt-4">
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-gray-600">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-gray-600"
+                      onClick={() => navigate(`/edit-lesson/${lesson.id}`)}
+                    >
                       <Edit className="h-4 w-4 mr-1" /> Edit
                     </Button>
                     <AlertDialog>

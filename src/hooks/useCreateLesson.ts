@@ -85,10 +85,14 @@ export function useCreateLesson(initialModuleId: string | null) {
     }
     
     try {
+      // Get most current modules data before saving
+      const existingModulesString = localStorage.getItem('modules');
+      const currentModules = existingModulesString ? JSON.parse(existingModulesString) : [];
+      
       // Get selected module name if applicable
       let selectedModuleName = null;
       if (lessonInput.moduleId) {
-        const selectedModule = modules.find(module => module.id === lessonInput.moduleId);
+        const selectedModule = currentModules.find((module: Module) => module.id === lessonInput.moduleId);
         selectedModuleName = selectedModule ? selectedModule.title : null;
       }
       
@@ -115,14 +119,13 @@ export function useCreateLesson(initialModuleId: string | null) {
       
       // Update module if lesson is assigned to a module
       if (lessonInput.moduleId) {
-        const existingModulesString = localStorage.getItem('modules');
-        const existingModules = existingModulesString ? JSON.parse(existingModulesString) : [];
-        
-        const updatedModules = existingModules.map((module: Module) => {
+        const updatedModules = currentModules.map((module: Module) => {
           if (module.id === lessonInput.moduleId) {
+            // Make sure lessons array exists before adding to it
+            const currentLessons = module.lessons || [];
             return {
               ...module,
-              lessons: [...module.lessons, lessonToSave.id]
+              lessons: [...currentLessons, lessonToSave.id]
             };
           }
           return module;
