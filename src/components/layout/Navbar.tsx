@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-  Settings, 
   Plus,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -23,13 +22,6 @@ export const Navbar = () => {
             onClick={() => navigate('/create-lesson')}
           >
             <Plus className="h-4 w-4 mr-2" /> New Lesson
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/settings')}
-          >
-            <Settings className="h-5 w-5" />
           </Button>
         </div>
       </div>

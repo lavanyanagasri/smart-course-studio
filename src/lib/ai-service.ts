@@ -1,13 +1,16 @@
+
 import { LessonContent, LessonInput } from "@/types/lesson";
 
 // This function will call the OpenAI API to generate lesson content
 export async function generateLesson(input: LessonInput): Promise<LessonContent> {
   try {
+    const API_KEY = "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";
+    
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY || localStorage.getItem('openai_api_key')}`
+        "Authorization": `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-4o",

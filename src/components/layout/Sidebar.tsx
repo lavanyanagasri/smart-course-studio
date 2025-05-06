@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { 
   Book, 
   BookOpen, 
-  Settings, 
   ListOrdered,
   Plus,
 } from 'lucide-react';
@@ -49,7 +48,6 @@ export const Sidebar = () => {
         <ul className="space-y-1 p-2">
           <NavItem icon={<BookOpen />} label="Lessons" to="/lessons" collapsed={collapsed} />
           <NavItem icon={<ListOrdered />} label="Modules" to="/modules" collapsed={collapsed} />
-          <NavItem icon={<Settings />} label="Settings" to="/settings" collapsed={collapsed} />
         </ul>
       </nav>
 

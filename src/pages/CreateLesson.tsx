@@ -45,7 +45,15 @@ const CreateLesson = () => {
           
           <TabsContent value="input">
             <LessonInputForm
-              lessonInput={lessonInput}
+              lessonInput={{
+                title: lessonInput.title,
+                topic: lessonInput.topic,
+                description: lessonInput.description,
+                targetAudience: lessonInput.targetAudience,
+                difficultyLevel: lessonInput.difficultyLevel,
+                additionalInstructions: lessonInput.additionalInstructions,
+                moduleId: lessonInput.moduleId || ''
+              }}
               modules={modules}
               isGenerating={isGenerating}
               handleInputChange={handleInputChange}

@@ -48,19 +48,6 @@ export function useCreateLesson(initialModuleId: string | null) {
       return;
     }
 
-    // Check if OpenAI API key exists in localStorage if not using environment variable
-    if (!import.meta.env.VITE_OPENAI_API_KEY) {
-      const apiKey = localStorage.getItem('openai_api_key');
-      if (!apiKey) {
-        toast({
-          title: "API Key Required",
-          description: "Please add your OpenAI API key in the settings page.",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
     try {
       setIsGenerating(true);
       // Add a timestamp to ensure unique prompts for different topics
