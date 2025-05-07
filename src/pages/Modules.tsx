@@ -158,7 +158,7 @@ const Modules = () => {
                     <span className="ml-1">{module.lessons?.length === 1 ? 'Lesson' : 'Lessons'}</span>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between border-t bg-gray-50 pt-4">
+                <CardFooter className="flex justify-between border-t bg-black-50 pt-4">
                   <div className="flex gap-2">
                     <Button 
                       variant="ghost" 
