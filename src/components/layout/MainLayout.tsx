@@ -13,7 +13,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Navbar />
-        <main className="flex-1 overflow-auto p-4 md:p-6 bg-gray-50">
+        <main className="flex-1 overflow-auto p-4 md:p-6 bg-background text-foreground">
           {children}
         </main>
       </div>
