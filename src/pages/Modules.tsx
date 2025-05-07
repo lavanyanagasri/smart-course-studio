@@ -126,8 +126,8 @@ const Modules = () => {
       <div className="animate-fade-in">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Course Modules</h1>
-            <p className="text-gray-600 mt-1">Organize lessons into coherent modules</p>
+            <h1 className="text-3xl font-bold text-white-900">Course Modules</h1>
+            <p className="text-white-600 mt-1">Organize lessons into coherent modules</p>
           </div>
           <Button 
             className="bg-coursegpt-purple hover:bg-coursegpt-purple-dark"
@@ -148,11 +148,11 @@ const Modules = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modules.map((module) => (
               <Card key={module.id}>
-                <CardHeader className="bg-coursegpt-gray-light pb-2">
+                <CardHeader className="bg-coursegpt-white-light pb-2">
                   <CardTitle>{module.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
-                  <p className="text-gray-600 mb-4">{module.description}</p>
+                  <p className="text-white-600 mb-4">{module.description}</p>
                   <div className="flex items-center text-sm text-gray-500">
                     <span className="font-medium">{module.lessons?.length || 0}</span>
                     <span className="ml-1">{module.lessons?.length === 1 ? 'Lesson' : 'Lessons'}</span>
