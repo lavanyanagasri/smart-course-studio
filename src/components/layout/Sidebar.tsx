@@ -16,19 +16,19 @@ export const Sidebar = () => {
   return (
     <aside
       className={cn(
-        "bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
+        "bg-black border-r border-gray-800 transition-all duration-300 flex flex-col",
         collapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="p-4 border-b border-gray-800 flex items-center justify-between">
         {!collapsed && (
-          <h1 className="font-bold text-xl text-coursegpt-purple">CourseGPT</h1>
+          <h1 className="font-bold text-xl text-white">CourseGPT</h1>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto"
+          className="ml-auto text-white hover:text-gray-300 hover:bg-gray-800"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <Book /> : <BookOpen />}
@@ -36,7 +36,7 @@ export const Sidebar = () => {
       </div>
 
       <div className="p-4">
-        <Button asChild variant="default" className="w-full mb-4 bg-coursegpt-purple hover:bg-coursegpt-purple-dark">
+        <Button asChild variant="default" className="w-full mb-4 bg-white hover:bg-gray-200 text-black">
           <Link to="/create-lesson">
             <Plus className={cn("h-4 w-4", collapsed ? "mr-0" : "mr-2")} />
             {!collapsed && "New Lesson"}
@@ -51,9 +51,9 @@ export const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-800">
         {!collapsed && (
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-400">
             CourseGPT v1.0.0
           </div>
         )}
@@ -74,9 +74,9 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, to, collapsed }) => {
     <li>
       <Link
         to={to}
-        className="flex items-center space-x-2 text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors"
+        className="flex items-center space-x-2 text-gray-300 hover:bg-gray-800 p-2 rounded-md transition-colors"
       >
-        <span className="text-coursegpt-purple">{icon}</span>
+        <span className="text-white">{icon}</span>
         {!collapsed && <span>{label}</span>}
       </Link>
     </li>
