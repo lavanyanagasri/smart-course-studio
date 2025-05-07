@@ -34,7 +34,7 @@ const CreateLesson = () => {
     <MainLayout>
       <div className="max-w-5xl mx-auto animate-fade-in">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Lesson</h1>
+          <h1 className="text-3xl font-bold text-white-900">Create New Lesson</h1>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
