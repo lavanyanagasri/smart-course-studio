@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -97,6 +96,12 @@ const ModuleLessons = () => {
     }
   };
 
+  const handleCreateLessonForModule = () => {
+    if (moduleId) {
+      navigate(`/create-lesson?moduleId=${moduleId}`);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="animate-fade-in">
@@ -106,12 +111,12 @@ const ModuleLessons = () => {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{module?.title || "Module"}</h1>
-              <p className="text-gray-600 mt-1">{module?.description}</p>
+              <h1 className="text-3xl font-bold text-gray-100">{module?.title || "Module"}</h1>
+              <p className="text-gray-400 mt-1">{module?.description}</p>
             </div>
             <Button 
               className="bg-coursegpt-purple hover:bg-coursegpt-purple-dark"
-              onClick={() => navigate(`/create-lesson?moduleId=${moduleId}`)}
+              onClick={handleCreateLessonForModule}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Lesson
@@ -122,11 +127,11 @@ const ModuleLessons = () => {
         {lessons.length === 0 ? (
           <div className="text-center py-12">
             <File className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No lessons yet</h3>
-            <p className="text-gray-600 mb-6">Create your first lesson for this module</p>
+            <h3 className="text-lg font-medium text-gray-100 mb-2">No lessons yet</h3>
+            <p className="text-gray-400 mb-6">Create your first lesson for this module</p>
             <Button 
               className="bg-coursegpt-purple hover:bg-coursegpt-purple-dark"
-              onClick={() => navigate(`/create-lesson?moduleId=${moduleId}`)}
+              onClick={handleCreateLessonForModule}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Lesson
@@ -135,26 +140,26 @@ const ModuleLessons = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {lessons.map((lesson) => (
-              <Card key={lesson.id}>
+              <Card key={lesson.id} className="bg-secondary border-gray-800">
                 <CardHeader>
                   <CardTitle>{lesson.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">{lesson.topic}</p>
+                  <p className="text-gray-400">{lesson.topic}</p>
                 </CardContent>
-                <CardFooter className="flex justify-between border-t pt-4">
+                <CardFooter className="flex justify-between border-t border-gray-800 pt-4">
                   <div className="flex gap-2">
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600"
+                      className="text-gray-300"
                       onClick={() => navigate(`/edit-lesson/${lesson.id}`)}
                     >
                       <Edit className="h-4 w-4 mr-1" /> Edit
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="text-red-600">
+                        <Button variant="ghost" size="sm" className="text-red-400">
                           <Trash2 className="h-4 w-4 mr-1" /> Delete
                         </Button>
                       </AlertDialogTrigger>

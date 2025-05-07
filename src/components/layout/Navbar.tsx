@@ -10,10 +10,10 @@ export const Navbar = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-black border-b border-gray-800">
       <div className="h-16 px-4 flex items-center justify-between">
         <div className="flex items-center">
-          <h2 className="text-lg font-semibold text-gray-800">Course Creator Studio</h2>
+          <h2 className="text-lg font-semibold text-gray-100">Course Creator Studio</h2>
         </div>
         <div className="flex items-center space-x-2">
           <Button 
