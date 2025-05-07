@@ -14,8 +14,8 @@ const Index = () => {
       <div className="flex flex-col space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome to CourseGPT</h1>
-            <p className="text-gray-600 mt-1">Create and organize your course content with AI assistance</p>
+            <h1 className="text-3xl font-bold text-white">Welcome to CourseGPT</h1>
+            <p className="text-white-600 mt-1">Create and organize your course content with AI assistance</p>
           </div>
           <Button 
             className="bg-coursegpt-purple hover:bg-coursegpt-purple-dark"
@@ -38,7 +38,7 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Generate complete lessons including titles, learning outcomes, key concepts, and activities in minutes.</p>
+              <p className="text-white-600">Generate complete lessons including titles, learning outcomes, key concepts, and activities in minutes.</p>
             </CardContent>
             <CardFooter>
               <Button 
@@ -62,7 +62,7 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Group related lessons, sequence content logically, and manage your course structure.</p>
+              <p className="text-white-600">Group related lessons, sequence content logically, and manage your course structure.</p>
             </CardContent>
             <CardFooter>
               <Button 
