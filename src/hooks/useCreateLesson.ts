@@ -85,7 +85,7 @@ export function useCreateLesson(initialModuleId: string | null) {
     }
     
     try {
-      // Get most current modules data before saving
+      // Always fetch the most current modules data before saving
       const existingModulesString = localStorage.getItem('modules');
       const currentModules = existingModulesString ? JSON.parse(existingModulesString) : [];
       
