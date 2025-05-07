@@ -148,7 +148,7 @@ const Modules = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modules.map((module) => (
               <Card key={module.id}>
-                <CardHeader className="bg-coursegpt-white-light pb-2">
+                <CardHeader className="bg-coursegpt-black-light pb-2">
                   <CardTitle>{module.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
